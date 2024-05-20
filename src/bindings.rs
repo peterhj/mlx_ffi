@@ -7,7 +7,7 @@ use std::ffi::{c_char, c_int, c_void};
 pub type mlx_string = *mut mlx_string_;
 
 #[repr(C)]
-pub struct mlx_string_([u8; 0]);
+pub struct mlx_string_ { _unused: [u8; 0] }
 
 extern "C" { pub fn mlx_string_data(str_: mlx_string) -> *const c_char; }
 
@@ -24,7 +24,7 @@ extern "C" { pub fn mlx_metal_get_peak_memory() -> usize; }
 pub type mlx_device = *mut mlx_device_;
 
 #[repr(C)]
-pub struct mlx_device_([u8; 0]);
+pub struct mlx_device_ { _unused: [u8; 0] }
 
 pub type mlx_device_type = mlx_device_type_;
 pub type mlx_device_type_ = c_int;
@@ -39,7 +39,7 @@ extern "C" { pub fn mlx_set_default_device(dev: mlx_device) -> mlx_device; }
 pub type mlx_stream = *mut mlx_stream_;
 
 #[repr(C)]
-pub struct mlx_stream_([u8; 0]);
+pub struct mlx_stream_ { _unused: [u8; 0] }
 
 extern "C" { pub fn mlx_stream_new(index: c_int, dev: mlx_device) -> mlx_stream; }
 extern "C" { pub fn mlx_stream_new_on_device(dev: mlx_device) -> mlx_stream; }
@@ -54,7 +54,7 @@ pub type mlx_array = *mut mlx_array_;
 pub type mlx_array_const = *const mlx_array_;
 
 #[repr(C)]
-pub struct mlx_array_([u8; 0]);
+pub struct mlx_array_ { _unused: [u8; 0] }
 
 pub type mlx_array_dtype = mlx_array_dtype_;
 pub type mlx_array_dtype_ = c_int;
@@ -122,7 +122,7 @@ pub type mlx_vector_array = *mut mlx_vector_array_;
 pub type mlx_vector_array_const = *const mlx_vector_array_;
 
 #[repr(C)]
-pub struct mlx_vector_array_([u8; 0]);
+pub struct mlx_vector_array_ { _unused: [u8; 0] }
 
 extern "C" { pub fn mlx_vector_array_new() -> mlx_vector_array; }
 extern "C" { pub fn mlx_vector_array_from_arrays(arrs: *mut mlx_array, num_arrs: usize) -> mlx_vector_array; }
@@ -136,7 +136,7 @@ pub type mlx_vector_vector_array = *mut mlx_vector_vector_array_;
 pub type mlx_vector_vector_array_const = *const mlx_vector_vector_array_;
 
 #[repr(C)]
-pub struct mlx_vector_vector_array_([u8; 0]);
+pub struct mlx_vector_vector_array_ { _unused: [u8; 0] }
 
 extern "C" { pub fn mlx_vector_vector_array_new() -> mlx_vector_vector_array; }
 extern "C" { pub fn mlx_vector_vector_array_add(vec2: mlx_vector_vector_array, vec: mlx_vector_array_const); }
@@ -147,7 +147,7 @@ extern "C" { pub fn mlx_vector_vector_array_size(vec2: mlx_vector_vector_array) 
 pub type mlx_closure = *mut mlx_closure_;
 
 #[repr(C)]
-pub struct mlx_closure_([u8; 0]);
+pub struct mlx_closure_ { _unused: [u8; 0] }
 
 extern "C" { pub fn mlx_async_eval(outputs: mlx_vector_array_const); }
 extern "C" { pub fn mlx_eval(outputs: mlx_vector_array_const); }
