@@ -326,38 +326,6 @@ impl Debug for MlxArray {
 }
 
 impl MlxArray {
-  pub fn zeros(shape: &[i64], dtype: MlxDtype) -> MlxArray {
-    let ndim = shape.len();
-    let mut raw_shape: Vec<i32> = Vec::with_capacity(ndim);
-    for &x in shape.iter() {
-      if x > i32::max_value() as i64 || x < i32::min_value() as i64 {
-        panic!();
-      }
-      raw_shape.push(x as _);
-    }
-    assert_eq!(ndim, raw_shape.len());
-    // FIXME: default stream.
-    let stm = MlxStream::default_cpu();
-    let out_raw = unsafe { mlx_zeros(raw_shape.as_ptr(), ndim, dtype.to_raw(), stm.raw) };
-    MlxArray{raw: out_raw}
-  }
-
-  pub fn ones(shape: &[i64], dtype: MlxDtype) -> MlxArray {
-    let ndim = shape.len();
-    let mut raw_shape: Vec<i32> = Vec::with_capacity(ndim);
-    for &x in shape.iter() {
-      if x > i32::max_value() as i64 || x < i32::min_value() as i64 {
-        panic!();
-      }
-      raw_shape.push(x as _);
-    }
-    assert_eq!(ndim, raw_shape.len());
-    // FIXME: default stream.
-    let stm = MlxStream::default_cpu();
-    let out_raw = unsafe { mlx_ones(raw_shape.as_ptr(), ndim, dtype.to_raw(), stm.raw) };
-    MlxArray{raw: out_raw}
-  }
-
   pub fn flat_len(&self) -> usize {
     unsafe { mlx_array_size(self.raw) }
   }
@@ -453,7 +421,7 @@ impl MlxVecArray {
 
   pub fn push<A: AsRef<MlxArray>>(&self, arr: A) {
     let arr = arr.as_ref();
-    unsafe { mlx_vector_array_add(self.raw, arr.raw as *const _) };
+    unsafe { mlx_vector_array_add(self.raw, arr.raw) };
   }
 
   pub fn to_debug_string(&self) -> MlxString {
@@ -509,7 +477,7 @@ impl MlxVecVecArray {
 
   pub fn push<V: AsRef<MlxVecArray>>(&self, varr: V) {
     let varr = varr.as_ref();
-    unsafe { mlx_vector_vector_array_add(self.raw, varr.raw as *const _) };
+    unsafe { mlx_vector_vector_array_add(self.raw, varr.raw) };
   }
 
   pub fn to_debug_string(&self) -> MlxString {
@@ -518,6 +486,120 @@ impl MlxVecVecArray {
   }
 
   pub fn get_raw(&self) -> mlx_vector_vector_array {
+    self.raw
+  }
+}
+
+pub struct MlxClosure {
+  raw:  mlx_closure,
+}
+
+impl Drop for MlxClosure {
+  fn drop(&mut self) {
+    unsafe { mlx_free(self.raw as _) };
+  }
+}
+
+impl Clone for MlxClosure {
+  fn clone(&self) -> MlxClosure {
+    unsafe { mlx_retain(self.raw as _) };
+    MlxClosure{raw: self.raw}
+  }
+}
+
+impl Debug for MlxClosure {
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    write!(f, "MlxClosure({})", self.to_debug_string())
+  }
+}
+
+impl MlxClosure {
+  pub fn new(raw_fun: unsafe extern "C" fn (mlx_vector_array_const) -> mlx_vector_array) -> MlxClosure {
+    let raw = unsafe { mlx_closure_new(raw_fun) };
+    MlxClosure{raw}
+  }
+
+  pub fn new_unary(raw_fun: unsafe extern "C" fn (mlx_array_const) -> mlx_array) -> MlxClosure {
+    let raw = unsafe { mlx_closure_new_unary(raw_fun) };
+    MlxClosure{raw}
+  }
+
+  pub fn apply<V: AsRef<MlxVecArray>>(&self, args: V) -> MlxVecArray {
+    let args = args.as_ref();
+    let outs_raw = unsafe { mlx_closure_apply(self.raw, args.raw) };
+    MlxVecArray{raw: outs_raw}
+  }
+
+  pub fn value_and_grad(&self) -> MlxClosureValueAndGrad {
+    // FIXME: argnums.
+    let argnums = [0];
+    let out_raw = unsafe { mlx_value_and_grad(self.raw, argnums.as_ptr(), argnums.len()) };
+    MlxClosureValueAndGrad{raw: out_raw}
+  }
+
+  pub fn vjp<U: AsRef<MlxVecArray>, V: AsRef<MlxVecArray>>(&self, primals: U, cotangents: V) -> MlxVecVecArray {
+    let primals = primals.as_ref();
+    let cotangents = cotangents.as_ref();
+    let out_raw = unsafe { mlx_vjp(self.raw, primals.raw, cotangents.raw) };
+    MlxVecVecArray{raw: out_raw}
+  }
+
+  pub fn jvp<U: AsRef<MlxVecArray>, V: AsRef<MlxVecArray>>(&self, primals: U, tangents: V) -> MlxVecVecArray {
+    let primals = primals.as_ref();
+    let tangents = tangents.as_ref();
+    let out_raw = unsafe { mlx_jvp(self.raw, primals.raw, tangents.raw) };
+    MlxVecVecArray{raw: out_raw}
+  }
+
+  pub fn to_debug_string(&self) -> MlxString {
+    let str_raw = unsafe { mlx_tostring(self.raw as _) };
+    MlxString{raw: str_raw}
+  }
+
+  pub fn get_raw(&self) -> mlx_closure {
+    self.raw
+  }
+}
+
+pub struct MlxClosureValueAndGrad {
+  raw:  mlx_closure_value_and_grad,
+}
+
+impl Drop for MlxClosureValueAndGrad {
+  fn drop(&mut self) {
+    unsafe { mlx_free(self.raw as _) };
+  }
+}
+
+impl Clone for MlxClosureValueAndGrad {
+  fn clone(&self) -> MlxClosureValueAndGrad {
+    unsafe { mlx_retain(self.raw as _) };
+    MlxClosureValueAndGrad{raw: self.raw}
+  }
+}
+
+impl Debug for MlxClosureValueAndGrad {
+  fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    write!(f, "MlxClosureValueAndGrad({})", self.to_debug_string())
+  }
+}
+
+impl MlxClosureValueAndGrad {
+  pub fn apply<V: AsRef<MlxVecArray>>(&self, args: V) -> (MlxVecArray, MlxVecArray) {
+    let args = args.as_ref();
+    let outs_raw = unsafe { mlx_closure_value_and_grad_apply(self.raw, args.raw) };
+    let outs = MlxVecVecArray{raw: outs_raw};
+    let value = outs.get(0).unwrap();
+    let grad = outs.get(1).unwrap();
+    (value, grad)
+  }
+
+  pub fn to_debug_string(&self) -> MlxString {
+    let str_raw = unsafe { mlx_tostring(self.raw as _) };
+    MlxString{raw: str_raw}
+  }
+
+  pub fn get_raw(&self) -> mlx_closure_value_and_grad {
     self.raw
   }
 }

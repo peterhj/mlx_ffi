@@ -1,6 +1,7 @@
 extern crate mlx_ffi;
 
 use mlx_ffi::*;
+use mlx_ffi::ops::*;
 
 #[test]
 fn test_ones() {

@@ -149,11 +149,22 @@ pub type mlx_closure = *mut mlx_closure_;
 #[repr(C)]
 pub struct mlx_closure_ { _unused: [u8; 0] }
 
+extern "C" { pub fn mlx_closure_new(fun: unsafe extern "C" fn (mlx_vector_array_const) -> mlx_vector_array) -> mlx_closure; }
+extern "C" { pub fn mlx_closure_new_unary(fun: unsafe extern "C" fn (mlx_array_const) -> mlx_array) -> mlx_closure; }
+extern "C" { pub fn mlx_closure_apply(cls: mlx_closure, inputs: mlx_vector_array_const) -> mlx_vector_array; }
+
+pub type mlx_closure_value_and_grad = *mut mlx_closure_value_and_grad_;
+
+#[repr(C)]
+pub struct mlx_closure_value_and_grad_ { _unused: [u8; 0] }
+
+extern "C" { pub fn mlx_closure_value_and_grad_apply(cls: mlx_closure_value_and_grad, inputs: mlx_vector_array_const) -> mlx_vector_vector_array; }
+
 extern "C" { pub fn mlx_async_eval(outputs: mlx_vector_array_const); }
 extern "C" { pub fn mlx_eval(outputs: mlx_vector_array_const); }
-//extern "C" { pub fn mlx_value_and_grad(fun: mlx_closure, argnums: *const c_int, num_argnums: usize) -> mlx_closure_value_and_grad; }
-//extern "C" { pub fn mlx_vjp(fun: mlx_closure, primals: mlx_vector_array_const, cotangents: mlx_vector_array_const) -> mlx_vector_vector_array; }
-//extern "C" { pub fn mlx_jvp(fun: mlx_closure, primals: mlx_vector_array_const, tangents: mlx_vector_array_const) -> mlx_vector_vector_array; }
+extern "C" { pub fn mlx_value_and_grad(fun: mlx_closure, argnums: *const c_int, num_argnums: usize) -> mlx_closure_value_and_grad; }
+extern "C" { pub fn mlx_vjp(fun: mlx_closure, primals: mlx_vector_array_const, cotangents: mlx_vector_array_const) -> mlx_vector_vector_array; }
+extern "C" { pub fn mlx_jvp(fun: mlx_closure, primals: mlx_vector_array_const, tangents: mlx_vector_array_const) -> mlx_vector_vector_array; }
 
 extern "C" { pub fn mlx_abs(a: mlx_array, s: mlx_stream) -> mlx_array; }
 extern "C" { pub fn mlx_add(a: mlx_array, b: mlx_array, s: mlx_stream) -> mlx_array; }
