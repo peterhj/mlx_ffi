@@ -44,6 +44,7 @@ pub struct mlx_stream_ { _unused: [u8; 0] }
 extern "C" { pub fn mlx_stream_new(index: c_int, dev: mlx_device) -> mlx_stream; }
 extern "C" { pub fn mlx_stream_new_on_device(dev: mlx_device) -> mlx_stream; }
 extern "C" { pub fn mlx_stream_equal(lstm: mlx_stream, rstm: mlx_stream) -> bool; }
+extern "C" { pub fn mlx_stream_get_device(stm: mlx_stream) -> mlx_device; }
 extern "C" { pub fn mlx_stream_synchronize(stm: mlx_stream); }
 extern "C" { pub fn mlx_default_stream(dev: mlx_device) -> mlx_stream; }
 extern "C" { pub fn mlx_set_default_stream(dev: mlx_device, stm: mlx_stream) -> mlx_stream; }

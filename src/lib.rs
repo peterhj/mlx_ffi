@@ -223,6 +223,11 @@ impl MlxStream {
     })
   }
 
+  pub fn get_device(&self) -> MlxDevice {
+    let raw = unsafe { mlx_stream_get_device(self.raw) };
+    MlxDevice{raw}
+  }
+
   pub fn synchronize(&self) {
     unsafe { mlx_stream_synchronize(self.raw) };
   }
